@@ -1,0 +1,50 @@
+// ============================================================
+// Firestore Security Rules for QuickNotes
+// ============================================================
+// These rules control WHO can read and write data in your database.
+// Without these rules, anyone could read/modify anyone's notes!
+//
+// HOW TO DEPLOY:
+// 1. Go to https://console.firebase.google.com
+// 2. Select your project
+// 3. Go to Firestore Database → Rules
+// 4. Paste these rules and click "Publish"
+// ============================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profiles: each user can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Notes: each user can only access their own notes
+      match /notes/{noteId} {
+        // A user can read their own notes
+        allow read: if request.auth != null && request.auth.uid == userId;
+
+        // A user can create notes only for themselves
+        // The userId field in the note must match the authenticated user
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.userId == userId;
+
+        // A user can update their own notes
+        // They cannot change the userId field (to prevent reassigning notes)
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.userId == userId;
+
+        // A user can delete their own notes
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Block everything else — no other collections are accessible
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

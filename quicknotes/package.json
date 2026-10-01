@@ -1,0 +1,10 @@
+{
+  "name": "quicknotes",
+  "version": "1.0.0",
+  "description": "A clean, Firebase-powered notes web app",
+  "scripts": {
+    "dev": "npx serve ."
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
