@@ -27,6 +27,10 @@
     } else {
       document.documentElement.classList.remove('dark');
     }
+  }
+
+  // Remember a theme the user picked themselves
+  function saveTheme(theme) {
     try {
       localStorage.setItem('quicknotes-theme', theme);
     } catch (e) {
@@ -34,14 +38,28 @@
     }
   }
 
-  // Toggle between light and dark
+  // Toggle between light and dark (only an explicit choice is saved,
+  // so users who never toggle keep following their OS setting)
   function toggleTheme() {
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    applyTheme(current === 'dark' ? 'light' : 'dark');
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveTheme(next);
   }
 
   // Apply theme immediately (before page renders) to prevent flash
   applyTheme(getTheme());
+
+  // Follow OS theme changes live until the user picks a theme themselves
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+      var saved = null;
+      try { saved = localStorage.getItem('quicknotes-theme'); } catch (e) {}
+      if (saved !== 'dark' && saved !== 'light') applyTheme(getTheme());
+    });
+  } catch (e) {
+    // Older browsers without addEventListener on MediaQueryList
+  }
 
   // Make toggleTheme available globally so buttons can call it
   window.toggleTheme = toggleTheme;
